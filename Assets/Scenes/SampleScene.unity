@@ -404,7 +404,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   velocidad: 100
   velocidaBase: 100
-  sprint: 0
+  sprintSpeed: 100
   Stamina: 100
 --- !u!212 &806697441
 SpriteRenderer:

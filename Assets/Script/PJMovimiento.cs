@@ -1,6 +1,5 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using System.Collections;
 
 public class PJMovimiento : MonoBehaviour
 {
@@ -8,54 +7,73 @@ public class PJMovimiento : MonoBehaviour
 
     [SerializeField] float velocidad;
     [SerializeField] float velocidaBase = 100;
-    [SerializeField] float sprint;
+    [SerializeField] float sprintSpeed;
+    
+    //Stamina
     [SerializeField] int Stamina = 100;
+    [SerializeField] int maxStamina = 100;
+    [SerializeField] int recuperacionStamina = 1;
+    [SerializeField] int perdidaStaminaXsprint = 1;
+    [SerializeField] int tiempoRecuperacion = 1;
+    [SerializeField] int tiempoPerdida = 1;
 
+    private bool Sprinteando = false;
 
-    // Start is called before the first frame update
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+
+        // Esto es para consumir y recuperar la stamina en tiempo real (Osea en X segundos)
+        StartCoroutine(ConsumirStamina());
+        StartCoroutine(RecuperarStamina());
     }
 
-    // Update is called once per frame
     void Update()
     {
         Moviemiento();
+    }
 
+    void Moviemiento()
+    {
+        float movimientoHorizontal = Input.GetAxis("Horizontal");
+        float movimientoVertical = Input.GetAxis("Vertical");
 
-
-        void Moviemiento()
+        if (Input.GetKey(KeyCode.LeftShift) && Stamina > 0)
         {
-
-            sprint = velocidaBase + velocidaBase;
-
-            if (Input.GetKey(KeyCode.LeftShift) && Stamina != 0)
-            {
-                velocidad = sprint;
-                Stamina = Stamina--;
-
-                for (Stamina = 100; Stamina == 0; Stamina--)
-                {
-                    Debug.Log(Stamina);
-                }
-
-               
-            }
-            else if (!Input.GetKey(KeyCode.LeftShift ) && Stamina == 0)
-            {
-                velocidad = velocidaBase;
-            }
-
-
-            float movimientoHorizontal = Input.GetAxis("Horizontal");
-            float movimientoVertical = Input.GetAxis("Vertical");
-
-            Vector2 Movimiento = new Vector2(movimientoHorizontal * velocidad, movimientoVertical * velocidad);
-
-            rb.AddForce(Movimiento);
+            velocidad = velocidaBase + sprintSpeed;
+            Sprinteando = true;
+        }
+        else
+        {
+            velocidad = velocidaBase;
+            Sprinteando = false;
         }
 
+        Vector2 Movimiento = new Vector2(movimientoHorizontal, movimientoVertical) * velocidad;
 
+        rb.AddForce(Movimiento);
+    }
+
+    IEnumerator ConsumirStamina()
+    {
+        while (true)
+        {
+            if (Sprinteando && Stamina > 0)
+            {
+                Stamina -= perdidaStaminaXsprint;
+            }
+            yield return new WaitForSeconds(tiempoPerdida);
+        }
+    }
+    IEnumerator RecuperarStamina()
+    {
+        while (true)
+        {
+            if (!Sprinteando && Stamina < maxStamina)
+            {
+                Stamina += recuperacionStamina;
+            }
+            yield return new WaitForSeconds(tiempoRecuperacion);
+        }
     }
 }
